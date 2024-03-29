@@ -12,3 +12,6 @@ The Data to be ingested will be the car sales data from [kaggle](https://www.kag
 - PostgreSQL
 - Terraform
 - GCP
+
+## Project Structure
+![Project Structure](/data-ingestion-plan.png "Project Structure")
