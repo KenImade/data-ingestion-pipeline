@@ -1,0 +1,38 @@
+services:
+  pgdatabase:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=car_owners_postgres_data
+    volumes:
+      - "./data/car_owners_postgres_data:/var/lib/postgresql/data:rw"
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    volumes:
+      - ./data_pgadmin:/var/lib/pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
+    ports:
+      - "8080:80"
+
+  data-ingestion:
+    image: python:3.8
+    volumes:
+      - .:/app
+    depends_on:
+      - pgdatabase
+    environment:
+      - DATABASE_HOST=pgdatabase
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=root
+      - DATABASE_NAME=car_owners_postgres_data
+      - DATABASE_PORT=5432
+      - TABLE_NAME=car_owners_data
+      - CSV_URL=https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/SAP2016T15T1CON13/CSV/1.0/en
+    command: >
+      bash -c "pip install pandas sqlalchemy psycopg2-binary && python /app/data_pipeline.py --user $$DATABASE_USER --password $$DATABASE_PASSWORD --host $$DATABASE_HOST --port $$DATABASE_PORT --db $$DATABASE_NAME --table_name $$TABLE_NAME --url $$CSV_URL"
